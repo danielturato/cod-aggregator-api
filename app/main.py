@@ -1,15 +1,6 @@
-import selenium.common.exceptions
-from fastapi import Depends, FastAPI, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware import Middleware
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from urllib.parse import urlparse, urlencode
-import time
-import uvicorn
-import os
-from _datetime import datetime, timedelta
-import pytz
+from fastapi import FastAPI, status
+
+from routers import tournaments
 
 # PROFILE = os.getenv('API_PROFILE', 'DEV')
 # GOOGLE_CHROME_BIN = os.getenv('GOOGLE_CHROME_BIN', '/app/.apt/opt/google/chrome/google-chrome')
@@ -20,7 +11,6 @@ import pytz
 # BASE_GB_URL = "https://gamebattles.majorleaguegaming.com/tournaments"
 # BASE_UMG_URL = "https://www.umggaming.com/g"
 # UMG_GAME_PATH = BASE_UMG_URL + os.getenv('UMG_GAME_PATH', '/vanguard/tournaments')
-
 # origins = [
 #     "https://laughing-fermi-342ce1.netlify.app/",
 #     "https://findcodtourneys.com/", "https://www.findcodtourneys.com/"
@@ -319,9 +309,6 @@ import pytz
 #     allow_origins=["https://findcodtourneys.com"],
 #     allow_methods=["*"],
 #     allow_headers=["*"])
-
-import depenencies
-from routers import tournaments
 
 app = FastAPI()
 app.include_router(tournaments.router)
