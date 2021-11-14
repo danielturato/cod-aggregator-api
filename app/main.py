@@ -1,5 +1,5 @@
 import selenium.common.exceptions
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware import Middleware
 from bs4 import BeautifulSoup
@@ -327,7 +327,11 @@ app = FastAPI()
 app.include_router(tournaments.router)
 
 
-if __name__ == '__main__':
-    # if PROFILE == 'DEV':
-    #     print("DEV MODE")
-    uvicorn.run("app.main:app", host='0.0.0.0', port=4557, reload=True, debug=True, workers=3)
+@app.get("/health", status_code=status.HTTP_200_OK)
+async def get_health():
+    return {'healthcheck': 'healthy'}
+
+# if __name__ == '__main__':
+#     # if PROFILE == 'DEV':
+#     #     print("DEV MODE")
+#     uvicorn.run("app.main:app", host='0.0.0.0', port=4557, reload=True, debug=True, workers=3)

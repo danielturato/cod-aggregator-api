@@ -2,7 +2,7 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    profile: str
+    profile: str = "PROD"
     mongodb_url: str
     google_chrome_bin: str
     chromedriver_path: str
