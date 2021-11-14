@@ -1,5 +1,5 @@
 import requests
-from config import Settings
+from app.config import Settings
 from fastapi import HTTPException
 
 
