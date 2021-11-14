@@ -1,6 +1,6 @@
 from functools import lru_cache
 from fastapi import Depends, Cookie, HTTPException
-from worker import conn
+from app.worker import conn
 from rq import Queue
 from app import config
 import motor.motor_asyncio
