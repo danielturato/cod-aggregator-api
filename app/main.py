@@ -1,6 +1,6 @@
 from fastapi import FastAPI, status
 
-from routers import tournaments
+from app.routers import tournaments
 
 # PROFILE = os.getenv('API_PROFILE', 'DEV')
 # GOOGLE_CHROME_BIN = os.getenv('GOOGLE_CHROME_BIN', '/app/.apt/opt/google/chrome/google-chrome')
