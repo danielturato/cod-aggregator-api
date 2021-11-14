@@ -28,5 +28,3 @@ jobs:
           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
           heroku_app_name: "vanguard-api"
           heroku_email: "danielturato@hotmail.co.uk"
-          healthcheck: "https://vanguard-api.herokuapp.com/health"
-          rollbackonhealthcheckfailed: true
