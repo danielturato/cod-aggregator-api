@@ -1,0 +1,13 @@
+beautifulsoup4~=4.10.0
+requests
+selenium~=4.0.0
+fastapi~=0.70.0
+uvicorn[standard]~=0.15.0
+pipreqs
+gunicorn
+pytz~=2021.3
+motor~=2.5.1
+pydantic~=1.8.2
+pymongo[srv]~=3.12.1
+rq~=1.10.0
+redis~=3.5.3
