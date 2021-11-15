@@ -6,11 +6,14 @@ from app.config import Settings
 
 
 def scrape_cmg(session_id):
-    asyncio.run(test(session_id))
+    loop = asyncio.get_event_loop()
+    coro = test(session_id)
+    loop.create_task(coro)
 
 
 async def test(session_id):
     settings = Settings()
+    print(settings.mongodb_url)
     db = (motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url)).vanguard_api
     if (tournament := await db["tournaments"].find_one({"session_id": session_id})) is not None:
         tournament["status"] = QueryStatus.failed
