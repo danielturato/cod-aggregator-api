@@ -3,6 +3,8 @@ from pydantic import BaseSettings, RedisDsn
 
 class Settings(BaseSettings):
     profile: str = "DEV"
+    google_chrome_bin = "/app/.apt/opt/google/chrome/google-chrome"
+    chromedriver_path = "/app/.chromedriver/bin/chromedriver"
     mongodb_url: str = "mongodb://root:password@localhost:27017"
     base_cmg_url: str = "https://www.checkmategaming.com"
     cmg_game_path: str = "/tournament/cross-platform/call-of-duty-vanguard"

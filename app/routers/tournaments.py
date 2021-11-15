@@ -60,7 +60,7 @@ async def cmg_region(regions):
 
 
 async def build_cmg_url(settings, team_size, regions):
-    url_query_build = urlparse(settings.cmg_game_path)
+    url_query_build = urlparse(settings.base_cmg_url + settings.cmg_game_path)
     queries = urlencode({**team_size, **regions})
     return url_query_build._replace(query=queries).geturl()
 

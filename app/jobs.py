@@ -3,12 +3,26 @@ from datetime import datetime, timedelta
 
 import motor.motor_asyncio
 import pytz
-import requests
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome import webdriver
 
 from app.models.tournament_models import QueryStatus, TournamentSite, Tournament
 from app.config import Settings
 from bs4 import BeautifulSoup
 from fastapi.encoders import jsonable_encoder
+
+
+async def load_driver(settings: Settings):
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument("--remote-debugging-port=9222")
+    chrome_options.add_argument("--headless")
+    chrome_options.binary_location = settings.google_chrome_bin
+
+    return webdriver.Chrome(executable_path=settings.chromedriver_path, chrome_options=chrome_options)
 
 
 def scrape_cmg(session_id, new_status: QueryStatus, cmg_url):
@@ -19,18 +33,18 @@ def scrape_cmg(session_id, new_status: QueryStatus, cmg_url):
 async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url):
     settings = Settings()
     db = motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url).vanguard_db
+    browser = await load_driver(settings)
     if (tournament_q := await db["tournaments"].find_one({"session_id": session_id})) is not None:
-        # update_res = \
-        #     await db["tournaments"].update_one({"_id": tournament["_id"]}, {"$set": tournament})
 
-        params = {
-            'access_key': '46de6899530e79d890a81385fd0f29eb',
-            'url': cmg_url,
-            'render_js': 1
-        }
-        res = requests.get('https://api.scrapestack.com/scrape', params)
+        browser.get(cmg_url)
+        try:
+            e = WebDriverWait(browser, 5).until(
+                EC.presence_of_element_located((By.ID, "competition-lobby-tournaments-container"))
+            )
+        finally:
+            browser.close()
 
-        soup = BeautifulSoup(res.content, "html.parser")
+        soup = BeautifulSoup(browser.page_source, "html.parser")
 
         tournaments_container = soup.find(id="competition-lobby-tournaments-container")
         tournament_divs = tournaments_container.find_all("div", class_="padding-tournament")
