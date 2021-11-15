@@ -33,6 +33,7 @@ class QueryStatus(str, Enum):
     fetching = "fetching"
     failed = "failed"
     ready = "ready"
+    fetched = "fetched"
 
     class Config:
         use_enum_values = True
