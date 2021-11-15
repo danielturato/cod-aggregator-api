@@ -54,7 +54,9 @@ async def cmg_region(regions):
         else:
             new_regions.append("na_eu")
 
-    return new_regions
+    new_regions = ",".join(new_regions)
+
+    return dict(region=new_regions)
 
 
 async def build_cmg_url(settings, team_size, regions):
@@ -90,7 +92,7 @@ async def get_tournaments(tournament_q_params: TournamentQuery = Depends(),
     if update_res.modified_count == 1:
         cmg_team_sizes = await cmg_team_size(tournament_q_params.team_sizes)
         cmg_regions = await cmg_region(tournament_q_params.regions)
-        cmg_url = await build_cmg_url(settings, ",".join(cmg_team_sizes), ",".join(cmg_regions))
+        cmg_url = await build_cmg_url(settings, cmg_team_sizes, cmg_regions)
 
         q.enqueue(scrape_cmg, tournament_q_model["session_id"], QueryStatus.fetched, cmg_url)
 
