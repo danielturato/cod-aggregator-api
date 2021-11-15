@@ -7,15 +7,15 @@ from app.config import Settings
 
 def scrape_cmg(session_id):
     loop = asyncio.get_event_loop()
-    coro = test(session_id)
-    loop.create_task(coro)
+    loop.run_until_complete(test(session_id))
 
 
 async def test(session_id):
     settings = Settings()
     print(settings.mongodb_url)
-    db = (motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url)).vanguard_api
+    db = motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url).vanguard_db
     if (tournament := await db["tournaments"].find_one({"session_id": session_id})) is not None:
+        print(tournament)
         tournament["status"] = QueryStatus.failed
 
         update_res = \
@@ -24,6 +24,7 @@ async def test(session_id):
         print(f"{update_res.modified_count} - res")
     else:
         print("FAILED")
+    print("DONE")
     # if (tournament := await db["tournaments"].find_one({"_id": _id})) is not None:
     #     print("here boss")
     #     params = {
