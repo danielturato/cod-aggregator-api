@@ -1,6 +1,6 @@
 import redis
 from rq import Worker, Queue, Connection
-from app.depenencies import get_settings
+from .depenencies import get_settings
 
 listen = ['high', 'default', 'low']
 settings = get_settings()
