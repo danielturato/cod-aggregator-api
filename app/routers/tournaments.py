@@ -40,7 +40,7 @@ async def get_tournaments(tournament_q_params: TournamentQuery = Depends(),
         await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
 
     if update_res.modified_count == 1:
-        q.enqueue(scrape_cmg, tournament_q_model)
+        q.enqueue(scrape_cmg, tournament_q_model["session_id"])
 
         return tournament_q_model
 

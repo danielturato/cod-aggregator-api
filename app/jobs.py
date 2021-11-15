@@ -3,14 +3,16 @@ import motor.motor_asyncio
 from app.config import Settings
 
 
-async def scrape_cmg(tournament_q_model):
+async def scrape_cmg(session_id):
     settings = Settings()
     db = (motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url)).vanguard_api
-    tournament_q_model["status"] = QueryStatus.failed
-    print(tournament_q_model)
-    update_res = \
-        await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
-    print(f"{update_res.modified_count} - res")
+    if (tournament := await db["tournaments"].find_one({"session_id": session_id})) is not None:
+        tournament["status"] = QueryStatus.failed
+
+        update_res = \
+            await db["tournaments"].update_one({"_id": tournament["_id"]}, {"$set": tournament})
+
+        print(f"{update_res.modified_count} - res")
     # if (tournament := await db["tournaments"].find_one({"_id": _id})) is not None:
     #     print("here boss")
     #     params = {
