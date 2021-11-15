@@ -43,7 +43,7 @@ class Tournament(BaseModel):
     site: TournamentSite
     name: str
     url: HttpUrl
-    region: Region
+    region: str
     prize: str
     start_time: float
 
