@@ -1,7 +1,9 @@
 from app.models.tournament_models import QueryStatus
+from app.depenencies import get_db
+from fastapi import Depends
 
 
-async def scrape_cmg(tournament_q_model, db):
+async def scrape_cmg(tournament_q_model, db = Depends(get_db)):
     tournament_q_model["status"] = QueryStatus.failed
     update_res = \
         await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
