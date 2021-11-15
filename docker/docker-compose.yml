@@ -1,0 +1,18 @@
+services:
+  mongo:
+    image: mongo
+    container_name: "mongo"
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - './dockervolume/mongodb:/data/db'
+    ports:
+      - 27017:27017
+  redis:
+    image: redis
+    container_name: "redis-q"
+    restart: always
+    ports:
+      - 6379:6379 

@@ -2,6 +2,8 @@ from fastapi import FastAPI, status
 
 from app.routers import tournaments
 
+import uvicorn
+
 # PROFILE = os.getenv('API_PROFILE', 'DEV')
 # GOOGLE_CHROME_BIN = os.getenv('GOOGLE_CHROME_BIN', '/app/.apt/opt/google/chrome/google-chrome')
 # CHROMEDRIVER_PATH = os.getenv('CHROMEDRIVER_PATH', '/app/.chromedriver/bin/chromedriver')
@@ -318,7 +320,6 @@ app.include_router(tournaments.router)
 async def get_health():
     return {'healthcheck': 'healthy'}
 
-# if __name__ == '__main__':
-#     # if PROFILE == 'DEV':
-#     #     print("DEV MODE")
-#     uvicorn.run("app.main:app", host='0.0.0.0', port=4557, reload=True, debug=True, workers=3)
+
+if __name__ == '__main__':
+    uvicorn.run("app.main:app", host='0.0.0.0', port=4557, reload=True, debug=True, workers=3)

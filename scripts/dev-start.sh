@@ -1,1 +1,1 @@
-docker run --name redis-q -p 6379:6379 -d redis
+docker-compose -f ../docker/docker-compose.yml up -d

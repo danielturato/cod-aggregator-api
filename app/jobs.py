@@ -1,10 +1,10 @@
-import requests
-from app.config import Settings
-from fastapi import HTTPException
+from app.routers.tournaments import QueryStatus
 
 
-async def scrape_cmg():
-    print("here")
+async def scrape_cmg(tournament_q_model, db):
+    tournament_q_model["status"] = QueryStatus.failed
+    update_res = \
+        await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
     # if (tournament := await db["tournaments"].find_one({"_id": _id})) is not None:
     #     print("here boss")
     #     params = {
