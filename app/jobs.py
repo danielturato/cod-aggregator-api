@@ -1,4 +1,4 @@
-from app.routers.tournaments import QueryStatus
+from app.models.tournament_models import QueryStatus
 
 
 async def scrape_cmg(tournament_q_model, db):
