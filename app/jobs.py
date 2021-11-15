@@ -6,7 +6,7 @@ import pytz
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome import webdriver
+from selenium import webdriver
 
 from app.models.tournament_models import QueryStatus, TournamentSite, Tournament
 from app.config import Settings
