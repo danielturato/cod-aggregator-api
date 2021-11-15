@@ -1,9 +1,11 @@
 from app.models.tournament_models import QueryStatus
-from app.depenencies import get_db
-from fastapi import Depends
+import motor.motor_asyncio
+from app.config import Settings
 
 
-async def scrape_cmg(tournament_q_model, db = Depends(get_db)):
+async def scrape_cmg(tournament_q_model):
+    settings = Settings()
+    db = (motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url)).vanguard_api
     tournament_q_model["status"] = QueryStatus.failed
     update_res = \
         await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
