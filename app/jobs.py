@@ -36,15 +36,18 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url):
     browser = await load_driver(settings)
     if (tournament_q := await db["tournaments"].find_one({"session_id": session_id})) is not None:
 
+        soup = None
         browser.get(cmg_url)
         try:
             e = WebDriverWait(browser, 5).until(
                 EC.presence_of_element_located((By.ID, "competition-lobby-tournaments-container"))
             )
+            soup = BeautifulSoup(browser.page_source, "html.parser")
         finally:
             browser.close()
 
-        soup = BeautifulSoup(browser.page_source, "html.parser")
+        if not soup:
+            raise Exception("Page didn't load sad face")
 
         tournaments_container = soup.find(id="competition-lobby-tournaments-container")
         tournament_divs = tournaments_container.find_all("div", class_="padding-tournament")
