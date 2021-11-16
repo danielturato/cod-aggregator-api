@@ -9,9 +9,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 
 from app.models.tournament_models import QueryStatus, TournamentSite, Tournament
+from app.depenencies import get_settings, get_db
 from app.config import Settings
 from bs4 import BeautifulSoup
 from fastapi.encoders import jsonable_encoder
+from fastapi import Depends
 
 
 async def load_driver(settings: Settings):
@@ -30,9 +32,10 @@ def scrape_cmg(session_id, new_status: QueryStatus, cmg_url):
     loop.run_until_complete(scrape_cmg_async(session_id, new_status, cmg_url))
 
 
-async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url):
-    settings = Settings()
-    db = motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url).vanguard_db
+async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url,
+                           settings: Settings = Depends(get_settings),
+                           db=Depends(get_db)):
+    #db = motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url).vanguard_db
     browser = await load_driver(settings)
     if (tournament_q := await db["tournaments"].find_one({"session_id": session_id})) is not None:
 

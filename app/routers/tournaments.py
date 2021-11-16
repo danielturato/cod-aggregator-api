@@ -76,6 +76,8 @@ async def get_tournaments(tournament_q_params: TournamentQuery = Depends(),
 
     if tournament_q_model["status"] == QueryStatus.fetched:
         tournament_q_model["status"] = QueryStatus.ready
+        tournament_q_model["tournaments"] = []
+
         update_res = \
             await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
 
