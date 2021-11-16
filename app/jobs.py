@@ -72,7 +72,7 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url):
         soup = None
         browser.get(cmg_url)
         try:
-            WebDriverWait(browser, 5).until(
+            e = WebDriverWait(browser, 5).until(
                 EC.presence_of_element_located((By.ID, "competition-lobby-tournaments-container"))
             )
             soup = BeautifulSoup(browser.page_source, "html.parser")
@@ -89,6 +89,8 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url):
 
         for t in tournament_divs:
             tournaments.append(jsonable_encoder(await get_tournament(t)))
+
+        print(f"checkpoint, length of t's: {len(tournaments)}")
 
         tournament_q["tournaments"].extend(tournaments)
         tournament_q["status"] = new_status
