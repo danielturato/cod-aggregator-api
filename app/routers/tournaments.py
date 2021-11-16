@@ -92,11 +92,12 @@ async def get_tournaments(tournament_q_params: TournamentQuery = Depends(),
         return tournament_q_model
 
     if tournament_q_model["status"] == QueryStatus.fetched:
-        tournament_q_model["status"] = QueryStatus.ready
-        tournament_q_model["tournaments"] = []
+        new_t_query = tournament_q_model.copy()
+        new_t_query["status"] = QueryStatus.ready
+        new_t_query["tournaments"] = []
 
         update_res = \
-            await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
+            await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": new_t_query})
 
         if update_res.modified_count == 1:
             return tournament_q_model
