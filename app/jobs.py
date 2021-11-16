@@ -16,7 +16,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi import Depends
 
 
-async def load_driver(settings: Settings):
+async def load_driver(settings: Settings = Depends(get_settings)):
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--disable-gpu')
     chrome_options.add_argument('--no-sandbox')
@@ -36,7 +36,7 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url,
                            settings: Settings = Depends(get_settings),
                            db=Depends(get_db)):
     #db = motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url).vanguard_db
-    browser = await load_driver(settings)
+    browser = await load_driver()
     if (tournament_q := await db["tournaments"].find_one({"session_id": session_id})) is not None:
 
         soup = None
