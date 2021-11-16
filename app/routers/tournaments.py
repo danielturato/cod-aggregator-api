@@ -9,7 +9,7 @@ from secrets import token_urlsafe
 
 from app.depenencies import get_settings, verify_session_cookie, get_db, get_q
 from app import config
-from app.jobs import scrape_cmg
+from app.jobs import scrape_cmg, scrape_umg
 from app.models.tournament_models import TournamentSite, Region, TeamSize, TournamentQModel, QueryStatus
 
 router = APIRouter()
@@ -101,7 +101,20 @@ async def enqueue_cmg_job(q, tournament_q_model, settings, tournament_q_params,
 
 async def enqueue_umg_job(q, tournament_q_model, settings, tournament_q_params,
                           new_status=QueryStatus.fetching, dependant_job=None):
-    umg_team_sizes = general_team_size(tournament_q_params.team_sizes)
+    umg_team_sizes = await general_team_size(tournament_q_params.team_sizes)
+
+    job = None
+
+    if dependant_job:
+        job = \
+            q.enqueue(scrape_umg, tournament_q_model["session_id"], new_status, umg_team_sizes,
+                      tournament_q_params.regions,
+                      retry=Retry(max=3), depends_on=dependant_job)
+    else:
+        job = q.enqueue(scrape_umg, tournament_q_model["session_id"], new_status, umg_team_sizes,
+                        tournament_q_params.regions, retry=Retry(max=3))
+
+    return job
 
 
 @router.get("/tournaments", response_model=TournamentQModel)

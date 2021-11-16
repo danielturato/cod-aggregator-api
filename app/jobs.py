@@ -63,8 +63,11 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url: st
 
         if not real_date:
             starts_in = timer_block[1].text
-            mins = int(starts_in.split("M")[0])
-            secs = int(starts_in.split(" ")[1].replace("S", ""))
+            try:
+                mins = int(starts_in.split("M")[0])
+                secs = int(starts_in.split(" ")[1].replace("S", ""))
+            except ValueError:
+                return None
 
             d_t = datetime.now().replace(tzinfo=pytz.timezone("GMT"))
             d_t = (d_t + timedelta(minutes=mins, seconds=secs)).timestamp()
@@ -99,7 +102,9 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url: st
         tournaments = []
 
         for t in tournament_divs:
-            tournaments.append(jsonable_encoder(await get_tournament(t)))
+            tourney = await get_tournament(t)
+            if tourney is not None:
+                tournaments.append(jsonable_encoder(tourney))
 
         await update_tournaments(db, tournaments, tournament_q, new_status)
 
