@@ -32,7 +32,7 @@ async def update_tournaments(db, tournaments, tournament_q, new_status):
     update_res = \
         await db["tournaments"].update_one({"_id": tournament_q["_id"]}, {"$set": tournament_q})
 
-    if update_res.modified_count != 1:
+    if update_res.modified_count == 0:
         raise Exception("Something went wrong :(")
 
 
