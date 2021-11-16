@@ -167,7 +167,15 @@ async def scrape_umg_async(session_id: str, new_status: QueryStatus, team_sizes:
             if tourney is not None:
                 res.append(tourney)
 
-        await update_tournaments(db, res, tournament_q, new_status)
+        print(f"length of ts: {len(res)}")
+        #await update_tournaments(db, res, tournament_q, new_status)
+        tournament_q["tournaments"].extend(res)
+        tournament_q["status"] = new_status
+        update_res = \
+            await db["tournaments"].update_one({"_id": tournament_q["_id"]}, {"$set": tournament_q})
+
+        if update_res.modified_count == 0:
+            raise Exception("Something went wrong :(")
         return
 
     raise Exception("Something went wrong :(")
