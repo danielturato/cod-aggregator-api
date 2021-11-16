@@ -108,7 +108,7 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url: st
 
 def scrape_umg(session_id, new_status: QueryStatus, team_sizes: List[str], regions: List[Region]):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(scrape_cmg_async(session_id, new_status, team_sizes, regions))
+    loop.run_until_complete(scrape_umg_async(session_id, new_status, team_sizes, regions))
 
 
 async def scrape_umg_async(session_id: str, new_status: QueryStatus, team_sizes: List[str], regions: List[Region]):
