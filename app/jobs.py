@@ -106,7 +106,14 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url: st
             if tourney is not None:
                 tournaments.append(jsonable_encoder(tourney))
 
-        await update_tournaments(db, tournaments, tournament_q, new_status)
+        # await update_tournaments(db, tournaments, tournament_q, new_status)
+        tournament_q["tournaments"].extend(tournaments)
+        tournament_q["status"] = new_status
+        update_res = \
+            await db["tournaments"].update_one({"_id": tournament_q["_id"]}, {"$set": tournament_q})
+
+        if not update_res.modified_count == 1:
+            raise Exception("Something went wrong :(")
 
     raise Exception("Something went wrong :(")
 

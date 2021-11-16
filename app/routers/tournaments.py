@@ -147,7 +147,8 @@ async def get_tournaments(tournament_q_params: TournamentQuery = Depends(),
 
     if update_res.modified_count == 1:
         cmg_job = await enqueue_cmg_job(q, tournament_q_model, settings, tournament_q_params)
-        umg_job = await enqueue_umg_job(q, tournament_q_model, settings, tournament_q_params, dependant_job=cmg_job)
+        # umg_job = await enqueue_umg_job(q, tournament_q_model, settings, tournament_q_params,
+        #                                 dependant_job=cmg_job, new_status=QueryStatus.fetched)
 
         return tournament_q_model
 
