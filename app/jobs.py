@@ -113,6 +113,7 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url: st
 
 
 def scrape_umg(session_id, new_status: QueryStatus, team_sizes: List[str], regions: List[Region]):
+    print(f"team_sizes: {len(team_sizes)}")
     loop = asyncio.get_event_loop()
     loop.run_until_complete(scrape_umg_async(session_id, new_status, team_sizes, regions))
 
@@ -130,7 +131,7 @@ async def scrape_umg_async(session_id: str, new_status: QueryStatus, team_sizes:
                                 "%Y-%m-%d %I:%M %p").replace(
             tzinfo=pytz.timezone("GMT")).timestamp()
 
-        size = sections[2].find('div', class_="col-sm-3 col-3").find('div', class_="data-item").text
+        size = sections[2].find('div', class_="col-sm-3 col-3").find('div', class_="data-item").text.lower()
         t_reg = sections[2].find('div', class_="col-sm-3 col-2").find('div', class_="data-item").text
 
         if t_reg not in regions:

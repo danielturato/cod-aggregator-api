@@ -29,13 +29,13 @@ async def general_team_size(team_sizes):
     t_s = []
 
     for size in team_sizes:
-        if t_s == 1:
+        if t_s == TeamSize.singles:
             t_s.append("1v1")
-        elif t_s == 2:
+        elif t_s == TeamSize.doubles:
             t_s.append("2v2")
-        elif t_s == 3:
+        elif t_s == TeamSize.threes:
             t_s.append("3v3")
-        elif t_s == 4:
+        elif t_s == TeamSize.fours:
             t_s.append("4v4")
 
     return t_s
