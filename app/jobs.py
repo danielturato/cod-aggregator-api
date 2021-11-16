@@ -149,7 +149,7 @@ async def scrape_umg_async(session_id: str, new_status: QueryStatus, team_sizes:
         browser.get(umg_url)
         try:
             e = WebDriverWait(browser, 5).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "game-section mobile-margin-section"))
+                EC.presence_of_element_located((By.CLASS_NAME, "game-section"))
             )
             soup = BeautifulSoup(browser.page_source, "html.parser")
         finally:
