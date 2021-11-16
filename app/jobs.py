@@ -107,6 +107,7 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url: st
                 tournaments.append(jsonable_encoder(tourney))
 
         await update_tournaments(db, tournaments, tournament_q, new_status)
+        return
 
     raise Exception("Something went wrong :(")
 
@@ -167,5 +168,6 @@ async def scrape_umg_async(session_id: str, new_status: QueryStatus, team_sizes:
                 res.append(tourney)
 
         await update_tournaments(db, res, tournament_q, new_status)
+        return
 
     raise Exception("Something went wrong :(")
