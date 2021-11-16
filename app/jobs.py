@@ -8,10 +8,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium import webdriver
 
-from app.models.tournament_models import QueryStatus, TournamentSite, Tournament
+from app.models.tournament_models import QueryStatus, TournamentSite, Tournament, Region
 from app.config import Settings
 from bs4 import BeautifulSoup
 from fastapi.encoders import jsonable_encoder
+from typing import List
 
 
 async def load_driver(settings: Settings):
@@ -25,12 +26,22 @@ async def load_driver(settings: Settings):
     return webdriver.Chrome(executable_path=settings.chromedriver_path, chrome_options=chrome_options)
 
 
-def scrape_cmg(session_id, new_status: QueryStatus, cmg_url):
+async def update_tournaments(db, tournaments, tournament_q, new_status):
+    tournament_q["tournaments"].extend(tournaments)
+    tournament_q["status"] = new_status
+    update_res = \
+        await db["tournaments"].update_one({"_id": tournament_q["_id"]}, {"$set": tournament_q})
+
+    if not update_res.modified_count == 1:
+        raise Exception("Something went wrong :(")
+
+
+def scrape_cmg(session_id, new_status: QueryStatus, cmg_url: str):
     loop = asyncio.get_event_loop()
     loop.run_until_complete(scrape_cmg_async(session_id, new_status, cmg_url))
 
 
-async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url):
+async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url: str):
     async def get_tournament(t):
         block = t.find("div", class_="tournament-box")
         details = block.find("div", class_="tournament-details")
@@ -90,9 +101,66 @@ async def scrape_cmg_async(session_id: str, new_status: QueryStatus, cmg_url):
         for t in tournament_divs:
             tournaments.append(jsonable_encoder(await get_tournament(t)))
 
-        print(f"checkpoint, length of t's: {len(tournaments)}")
+        await update_tournaments(db, tournaments, tournament_q, new_status)
 
-        tournament_q["tournaments"].extend(tournaments)
-        tournament_q["status"] = new_status
-        update_res = \
-            await db["tournaments"].update_one({"_id": tournament_q["_id"]}, {"$set": tournament_q})
+    raise Exception("Something went wrong :(")
+
+
+def scrape_umg(session_id, new_status: QueryStatus, team_sizes: List[str], regions: List[Region]):
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(scrape_cmg_async(session_id, new_status, team_sizes, regions))
+
+
+async def scrape_umg_async(session_id: str, new_status: QueryStatus, team_sizes: List[str], regions: List[Region]):
+    settings = Settings()
+    umg_url = settings.base_umg_url + settings.umg_game_path
+
+    async def get_tournament(t):
+        prize = t.find('div', class_="prize-holder").text
+        sections = t.find_all('div', class_="container-fluid")
+        name = sections[1].find('div', class_="col-12").text
+        start_time = sections[2].find('div', class_="__react_component_tooltip").find('div').text
+        d_t = datetime.strptime(start_time.replace("UTC", "").replace("EST", "").replace("GMT", "").strip(),
+                                "%Y-%m-%d %I:%M %p").replace(
+            tzinfo=pytz.timezone("GMT")).timestamp()
+
+        size = sections[2].find('div', class_="col-sm-3 col-3").find('div', class_="data-item").text
+        t_reg = sections[2].find('div', class_="col-sm-3 col-2").find('div', class_="data-item").text
+
+        if t_reg not in regions:
+            return None
+
+        if size not in team_sizes:
+            return None
+
+        return Tournament(site=TournamentSite.umg, name=name, url=umg_url, region=t_reg, prize=prize, start_time=d_t)
+
+    db = motor.motor_asyncio.AsyncIOMotorClient(settings.mongodb_url).vanguard_db
+    browser = await load_driver(settings)
+
+    if (tournament_q := await db["tournaments"].find_one({"session_id": session_id})) is not None:
+        soup = None
+        browser.get(umg_url)
+        try:
+            e = WebDriverWait(browser, 5).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "game-section mobile-margin-section"))
+            )
+            soup = BeautifulSoup(browser.page_source, "html.parser")
+        finally:
+            browser.close()
+
+        if not soup:
+            raise Exception("Page didn't load :(")
+
+        upcoming_section = soup.find_all('div', class_="game-section mobile-margin-section")[1]
+        ts = upcoming_section.find_all('div', class_="tournament-tile-container col-12")
+        res = []
+
+        for t in ts:
+            tourney = await get_tournament(t)
+            if tourney is not None:
+                res.append(tourney)
+
+        await update_tournaments(db, res, tournament_q, new_status)
+
+    raise Exception("Something went wrong :(")
