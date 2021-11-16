@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import conset
-from rq import Queue
+from rq import Queue, Retry
 from secrets import token_urlsafe
 
 from app.depenencies import get_settings, verify_session_cookie, get_db, get_q
@@ -65,6 +65,23 @@ async def build_cmg_url(settings, team_size, regions):
     return url_query_build._replace(query=queries).geturl()
 
 
+async def enqueue_cmg_job(q, tournament_q_model, settings, tournament_q_params, dependant_job=None):
+    cmg_team_sizes = await cmg_team_size(tournament_q_params.team_sizes)
+    cmg_regions = await cmg_region(tournament_q_params.regions)
+    cmg_url = await build_cmg_url(settings, cmg_team_sizes, cmg_regions)
+
+    job = None
+
+    if dependant_job:
+        job = \
+            q.enqueue(scrape_cmg, tournament_q_model["session_id"], QueryStatus.fetched, cmg_url,
+                      retry=Retry(max=3), depends_on=dependant_job)
+    else:
+        job = q.enqueue(scrape_cmg, tournament_q_model["session_id"], QueryStatus.fetched, cmg_url, retry=Retry(max=3))
+
+    return job
+
+
 @router.get("/tournaments", response_model=TournamentQModel)
 async def get_tournaments(tournament_q_params: TournamentQuery = Depends(),
                           db=Depends(get_db),
@@ -92,11 +109,7 @@ async def get_tournaments(tournament_q_params: TournamentQuery = Depends(),
         await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
 
     if update_res.modified_count == 1:
-        cmg_team_sizes = await cmg_team_size(tournament_q_params.team_sizes)
-        cmg_regions = await cmg_region(tournament_q_params.regions)
-        cmg_url = await build_cmg_url(settings, cmg_team_sizes, cmg_regions)
-
-        q.enqueue(scrape_cmg, tournament_q_model["session_id"], QueryStatus.fetched, cmg_url)
+        cmg_job = enqueue_cmg_job(q, tournament_q_model, settings, tournament_q_params)
 
         return tournament_q_model
 
