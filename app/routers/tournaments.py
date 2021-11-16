@@ -109,7 +109,7 @@ async def get_tournaments(tournament_q_params: TournamentQuery = Depends(),
         await db["tournaments"].update_one({"_id": tournament_q_model["_id"]}, {"$set": tournament_q_model})
 
     if update_res.modified_count == 1:
-        cmg_job = enqueue_cmg_job(q, tournament_q_model, settings, tournament_q_params)
+        cmg_job = await enqueue_cmg_job(q, tournament_q_model, settings, tournament_q_params)
 
         return tournament_q_model
 
